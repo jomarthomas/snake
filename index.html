@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chess Game</title>
+    <!-- Embedded CSS -->
+    <style>
+        body {
+            margin: 0;
+            background-color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+
+        #chessboard {
+            width: 480px;
+            height: 480px;
+            display: grid;
+            grid-template: repeat(8, 1fr) / repeat(8, 1fr);
+            border: 2px solid #fff;
+        }
+
+        .square {
+            width: 60px;
+            height: 60px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 36px;
+            cursor: pointer;
+        }
+
+        .dark {
+            background-color: #769656;
+        }
+
+        .light {
+            background-color: #eeeed2;
+        }
+
+        .selected {
+            outline: 2px solid yellow;
+        }
+    </style>
+</head>
+<body>
+    <!-- Chessboard -->
+    <div id="chessboard"></div>
+
+    <!-- Embedded JavaScript -->
+    <script>
+        const boardElement = document.getElementById('chessboard');
+
+        // Chess board representation
+        let board = [
+            ['♜','♞','♝','♛','♚','♝','♞','♜'],
+            ['♟','♟','♟','♟','♟','♟','♟','♟'],
+            ['','','','','','','',''],
+            ['','','','','','','',''],
+            ['','','','','','','',''],
+            ['','','','','','','',''],
+            ['♙','♙','♙','♙','♙','♙','♙','♙'],
+            ['♖','♘','♗','♕','♔','♗','♘','♖']
+        ];
+
+        // Player turn: 'white' or 'black'
+        let turn = 'white';
+
+        // Selected piece
+        let selected = null;
+
+        // Create the board
+        function createBoard() {
+            boardElement.innerHTML = '';
+            for (let i = 0; i < 8; i++) {
+                for (let j = 0; j < 8; j++) {
+                    const square = document.createElement('div');
+                    square.classList.add('square');
+                    square.classList.add((i + j) % 2 === 0 ? 'light' : 'dark');
+                    square.dataset.row = i;
+                    square.dataset.col = j;
+                    square.textContent = board[i][j];
+                    square.addEventListener('click', onSquareClick);
+                    boardElement.appendChild(square);
+                }
+            }
+        }
+
+        // Handle square click
+        function onSquareClick(e) {
+            const row = parseInt(e.target.dataset.row);
+            const col = parseInt(e.target.dataset.col);
+            const piece = board[row][col];
+            const pieceColor = getPieceColor(piece);
+
+            if (selected) {
+                // Move the piece
+                const [fromRow, fromCol] = selected;
+                if (isValidMove(fromRow, fromCol, row, col, piece)) {
+                    board[row][col] = board[fromRow][fromCol];
+                    board[fromRow][fromCol] = '';
+                    turn = turn === 'white' ? 'black' : 'white';
+                    createBoard();
+                }
+                selected = null;
+            } else {
+                if (piece && pieceColor === turn) {
+                    selected = [row, col];
+                    e.target.classList.add('selected');
+                }
+            }
+        }
+
+        // Get piece color
+        function getPieceColor(piece) {
+            if ('♔♕♖♗♘♙'.includes(piece)) return 'white';
+            if ('♚♛♜♝♞♟'.includes(piece)) return 'black';
+            return null;
+        }
+
+        // Basic move validation (only allows moving pieces, not enforcing rules)
+        function isValidMove(fromRow, fromCol, toRow, toCol, targetPiece) {
+            const piece = board[fromRow][fromCol];
+            const pieceColor = getPieceColor(piece);
+            const targetColor = getPieceColor(targetPiece);
+
+            // Prevent capturing own pieces
+            if (targetColor === pieceColor) return false;
+
+            // Add more rules here for specific piece movements
+            return true;
+        }
+
+        createBoard();
+    </script>
+</body>
+</html>
